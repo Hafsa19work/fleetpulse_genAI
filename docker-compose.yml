@@ -1,0 +1,63 @@
+# FleetPulse — containerised demo.
+#
+#   docker compose up --build          API + dashboard on http://localhost:8000
+#   docker compose --profile sim up    ... and a simulated fleet with 5 faults armed
+#   docker compose run --rm tests      run the 278 AI-generated tests
+#
+# Final Term Project · Hafsa Aqeel (53317)
+
+services:
+  api:
+    build: .
+    image: fleetpulse:1.0
+    container_name: fleetpulse-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - fleetpulse-data:/data
+    environment:
+      # Same origin serves the SPA, the API and the WebSocket, so CORS never applies.
+      FLEETPULSE_LOG_LEVEL: INFO
+      FLEETPULSE_OFFLINE_SWEEP_INTERVAL_S: "20"
+    restart: unless-stopped
+
+  # Opt-in so `docker compose up` alone gives an idle fleet to explore first.
+  simulator:
+    build: .
+    image: fleetpulse:1.0
+    container_name: fleetpulse-simulator
+    profiles: ["sim"]
+    depends_on:
+      api:
+        condition: service_healthy
+    volumes:
+      # Shares the SQLite file: the simulator reads the registered fleet and its
+      # routes directly, then posts telemetry back over HTTP through the same
+      # ingestion path the dashboard depends on.
+      - fleetpulse-data:/data
+    environment:
+      FLEETPULSE_API_URL: http://api:8000
+    # The image-level healthcheck curls localhost:8000, which only exists in the
+    # api container. Left enabled, this service reports "unhealthy" while working
+    # perfectly — a false alarm on `docker compose ps` is worse than no check.
+    healthcheck:
+      disable: true
+    command:
+      - simulator
+      - --interval=5
+      - --scenario=BUS-03=overheat
+      - --scenario=TRK-01=cargo_spike
+      - --scenario=BUS-05=deviation
+      - --scenario=BUS-07=dropout
+      - --scenario=BUS-02=fuel_drain
+    restart: unless-stopped
+
+  # One-shot: `docker compose run --rm tests`
+  tests:
+    build: .
+    image: fleetpulse:1.0
+    profiles: ["tools"]
+    command: ["test"]
+
+volumes:
+  fleetpulse-data:

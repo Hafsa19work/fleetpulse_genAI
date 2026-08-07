@@ -1,0 +1,26 @@
+# Normalise line endings so the project builds identically on Windows.
+#
+# Git for Windows defaults to core.autocrlf=true, which rewrites checked-out text
+# files with CRLF. For a shell script that is fatal: Linux reads the trailing \r as
+# part of the interpreter path and the container dies with the famously unhelpful
+#   exec /usr/local/bin/entrypoint.sh: no such file or directory
+# Forcing LF on everything the container executes removes that failure entirely.
+
+* text=auto
+
+*.sh          text eol=lf
+Dockerfile    text eol=lf
+*.yml         text eol=lf
+*.yaml        text eol=lf
+*.py          text eol=lf
+*.json        text eol=lf
+*.js          text eol=lf
+*.jsx         text eol=lf
+*.css         text eol=lf
+*.html        text eol=lf
+*.md          text eol=lf
+
+# Binary: never touch these.
+*.png         binary
+*.jpg         binary
+*.docx        binary

@@ -1,0 +1,14 @@
+.git
+.venv
+**/node_modules
+**/dist
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/htmlcov
+**/.coverage
+**/*.db
+**/*.sqlite3
+.DS_Store
+docs
+*.docx
