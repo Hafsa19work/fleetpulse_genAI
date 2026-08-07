@@ -1,0 +1,29 @@
+# FleetPulse backend dependencies
+#
+# Pinned to exact versions — these are the versions the 290-test suite, the
+# coverage figures in docs/09-test-report.md and the 18-minute endurance run in
+# §6c were all verified against. The frontend is already reproducible through
+# package-lock.json; this makes the Python side match, so a build on another
+# machine on another day produces the same software that was tested rather than
+# whatever pip resolves that morning.
+#
+# Only *direct* dependencies are pinned. Transitive ones are left to pip, because
+# a full `pip freeze` would pin platform-specific packages (uvloop, for instance,
+# which uvicorn[standard] correctly omits on Windows) and would then fail to
+# install there. To upgrade deliberately: relax a pin, run `pytest`, re-pin.
+
+fastapi==0.141.1
+uvicorn[standard]==0.52.1
+sqlalchemy==2.0.51
+pydantic==2.13.4
+pydantic-settings==2.14.2
+httpx==0.28.1
+
+# Testing (the AI-generated suite — mandatory constraint for Python)
+pytest==9.1.1
+pytest-cov==7.1.0
+pytest-asyncio==1.4.0
+
+# Optional: real GTFS-Realtime ingestion (see docs/07-installation-guide.md).
+# Intentionally NOT installed by default — the service degrades gracefully without it.
+# gtfs-realtime-bindings==1.0.0
